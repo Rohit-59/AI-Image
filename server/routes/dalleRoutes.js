@@ -30,8 +30,25 @@ const image = aiResponse.data[0].b64_json;
 res.status(200).json({photo: image});
 
  } catch (error) {
-    console.log(error)
-    res.status(500).send(error?.response.data.error.message);
+
+
+
+    if (error instanceof OpenAI.APIError) {
+        console.error(error.status); 
+        console.error(error.message);
+        console.error(error.code);  
+        console.error(error.type);  
+     
+        res.status(500).send(error?.error.message);
+
+      } else {
+       
+        console.log(error);
+      }
+
+
+    // console.log(error)
+    // res.status(500).send(error?.response.data.error.message);
     
  }
 }
