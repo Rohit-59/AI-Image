@@ -13,32 +13,43 @@ router.route('/').get((req,res)=>{
 
 router.route('/').post(async (req,res)=>{
  try {
-    const {prompt} = req.body; 
-    console.log(prompt);
-    const apiUrl = 'https://api.limewire.com/api/image/generation';
+  const {prompt} = req.body; 
+  console.log(prompt);
+  const apiUrl = 'https://genai-api.picsart.io/v1/text2image';
 
 const aiResponse = await fetch(apiUrl,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Api-Version': 'v1',
-        Accept: 'application/json',
-        Authorization: `Bearer ${process.env.LM_API_KEY}`
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        aspect_ratio: '1:1'
-      })
-    }
+{
+  method: 'POST',
+  headers: {accept: 'application/json',
+     'content-type': 'application/json',
+    'X-Picsart-API-Key': process.env.PA_API_KEY,
+    },
+  body: JSON.stringify({
+    prompt: prompt,
+    negative_prompt: 'distorted faces',
+    width: 1024,
+    height: 1024,
+    count: 1
+  })
+}
+);
+
+const data = await aiResponse.json();
+const imageID = data["inference_id"]
+console.log(data); 
+
+const final = await fetch(`https://genai-api.picsart.io/v1/text2image/inferences/${imageID}`,
+  {
+    method: 'GET',
+    headers: {accept: 'application/json',
+      'X-Picsart-API-Key': process.env.PA_API_KEY,
+      },    
+  }
   );
+  const finalGET = await final.json();
 
-  const data = await aiResponse.json();
-  console.log(data); 
-
-
-const image = data.data[0].asset_url;
-
+const image = finalGET.data[0].url;
+console.log(image);
 res.status(200).json({photo: image});
 
  } catch (error) {
